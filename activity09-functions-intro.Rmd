@@ -1,6 +1,6 @@
 ---
 title: "Activity 9"
-author: "Name"
+author: "Lindsay Bandyk"
 output: github_document
 ---
 
@@ -14,6 +14,10 @@ In this activity, we will create a function for calculating the range of a numer
 
 To begin, we need `{tidyverse}` and `{gapminder}` (for a dataset to test our functions with) packages loaded.
 
+```{r load message=FALSE}
+library(tidyverse)
+library(gapminder)
+```
 
 
 
@@ -112,7 +116,20 @@ Also, explore this function with different `probs`.
 
 
 
+
 Once, you feel comfortable with the `quantile` function, create a function named `quantile_range` that calculates the statistical range.
+
+```{r quartilerangefunctions}
+quantile_range <- function(x) {
+  if (! is.numeric(x)){
+    stop ("This is not a numeric vector!")
+  }
+  q3 <- quantile(x, probs = .75)
+  q1 <- quantile(x , probs = .25)
+  iqr <- q3 - q1
+  return(unname(iqr))
+```
+
 
 
 
@@ -123,6 +140,20 @@ Also, verify that it gets the correct result for `1:10` (a sequence of numbers s
 
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: This is the end of Part 1 of this activity. You can use the rest of the class period working on your project. The rest of this activity will be completed in our next class session/at home.
+
+
+```{r testing qrange}
+IQR(gapminder$lifeExp)
+quantile_range(gapminder$lifeExp)
+IQR(x)
+quantile_range(x)
+IQR(y)
+quantile_range(y)
+IQR(gapminder$pop)
+quantile_range(gapminder$pop)
+IQR(gapminder$gdpPercap)
+quantile_range(gapminder$gdpPercap)
+```
 
 ## Part II
 
@@ -136,6 +167,11 @@ When we write functions, we should also make sure that it fails when we expect i
 
 Below, check that our function breaks for each of the above tests.
 
+```{r test failure}
+quantile_range(gapminder)
+quantile_range(gapminder$country)
+quantile_range("Go Lakers!")
+```
 
 For functions that will be used again, it is a good practice to add argument validity checks.
 
@@ -173,8 +209,24 @@ Test your function with:
 
 Also test that your function breaks when it should.
 
+```{r with probs argument}
+quantile_range <- function(x, probs) {
+  if (! is.numeric(x)){
+    stop ("This is not a numeric vector!")
+  }
+  prob2 <- quantile(x, probs = probs[2])
+  prob1 <- quantile(x , probs = probs[1])
+  range_probs <- prob2 - prob1
+  return(unname(range_probs))
+}
+```
 
 
+```{r new function test}
+quantile_range(x, probs = c(.1, .9))
+quantile_range(gapminder$lifeExp, probs = c(.9, .99))
+quantile_range("La La Land", probs = c(.5, .75))
+```
 
 
 Since you we using the `quantile` function in the `quantile_range` function, we should be consistent with the arguments that we specify.
@@ -201,8 +253,28 @@ Update your `quantile_range` function below (copy, paste, edit) to have the defa
 Check that your function works by specifying and not specifying the `probs` argument.
 Then, upgrade your function to contain a validity check for the new `probs` argument.
 
+```{r with default values for probs}
+quantile_range <- function(x, probs = c(0, 1)) {
+  if (! is.numeric(x)){
+    stop ("This is not a numeric vector!")
+  }
+  prob2 <- quantile(x, probs = probs[2])
+  prob1 <- quantile(x , probs = probs[1])
+  range_probs <- prob2 - prob1
+  return(unname(range_probs))
+}
+```
 
 
+```{r  checking new function}
+quantile_range(gapminder$lifeExp)
+max(gapminder$lifeExp) - min(gapminder$lifeExp)
+quantile_range(x)
+max(x) - min(x)
+quantile_range(gapminder$lifeExp, c(.5, .75))
+quantile_range(gapminder$pop, c(.25, .8))
+```
+```
 
 ### Handling `NA`s
 
@@ -221,12 +293,30 @@ quantile(z, na.rm = TRUE)
 
 **Response:**
 
+The variable z with an NA value in index 3 failed to run with the quantile function as missing values are not allowed in a dataset.  The na.rm argument removes all NAs from a variable before the quantile function is executed.  The default value of na.rm is FALSE.
+
+
 Setting `na.rm` within your function without providing users a way to override this behavior would be ill-advised.
 Update your `quant_diff` function to be more robust (i.e., handle `NA`s) while also providing users to control the behavior around `NA`s.
 You are welcome to enforce your preferred choice when defining the default behavior, but be sure to provide a way for users to control this.
 
+```{r to handle NAs as well in quart range}
+quantile_range <- function(x, probs = c(0, 1), na.rm = FALSE) {
+  if (! is.numeric(x)){
+    stop ("This is not a numeric vector!")
+  }
+  prob2 <- quantile(x, probs = probs[2], na.rm = na.rm)
+  prob1 <- quantile(x , probs = probs[1], na.rm = na.rm)
+  range_probs <- prob2 - prob1
+  return(unname(range_probs))
+}
+```
 
 
+```{r}
+quantile_range(z, na.rm = TRUE)
+
+```
 
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: If you have any questions, contact your instructor. Otherwise feel free to continue on.
@@ -246,7 +336,13 @@ Test that this worked by running the following lines of code:
 
 ```{r}
 quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 1)
+quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 4)quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 1)
 quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 4)
+```
+
+```{r}
+quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 2)
+quantile_range(gapminder$lifeExp, probs = c(0.25, 0.75), type = 9)
 ```
 
 The `...` argument is useful for when you want to provide the ability to pass arbitrary arguments to another function, but don’t want to constantly be expanding the formal arguments.
@@ -265,8 +361,13 @@ Now we will see if it works within the `{tidyverse}`.
 
 In the code chunk below, calculate the IQR for the variable `gdpPercap` in the gapminder dataset for each continent in the year 2002.
 
-```{r}
-
+```{r test in tidy}
+test <- gapminder %>% 
+  filter(year == 2002) %>%
+  group_by(continent) %>%  
+  mutate(iqr_gdpPercap_2002 = quantile_range(gdpPercap, c(.25,.75))) %>% 
+  distinct(continent, iqr_gdpPercap_2002)
+test
 ```
 
 
